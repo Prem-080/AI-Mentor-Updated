@@ -201,9 +201,9 @@ const CoursesPage = () => {
               /* My Courses Content */
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {courseCards.map((course) => (
-                  <Link to={`/course-preview/${course.id}`} key={course.id}>
-                    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-                      {/* Course Header with Background */}
+                  <div key={course.id} className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                    {/* Course Header with Background */}
+                    <Link to={`/course-preview/${course.id}`}>
                       <div className={`relative h-48 bg-gradient-to-br ${course.backgroundGradient} p-4 flex flex-col justify-between`}>
                         {course.backgroundImage && (
                           <img
@@ -212,24 +212,25 @@ const CoursesPage = () => {
                             className="absolute inset-0 w-full h-full object-cover"
                           />
                         )}
-                        <div className="relative z-10">
-                          <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full">
-                            {course.status}
-                          </span>
-                        </div>
-                        <div className="relative z-10 space-y-3">
-                          <h3 className="text-xl font-semibold text-white">{course.title}</h3>
-                          <div className="space-y-2">
-                            <div className="w-full bg-white/20 rounded-full h-2">
-                              <div
-                                className="h-2 bg-white rounded-full transition-all duration-300"
-                                style={{ width: `${course.progress}%` }}
-                              />
+                          <div className="relative z-10">
+                            <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-sm rounded-full">
+                              {course.status}
+                            </span>
+                          </div>
+                          <div className="relative z-10 space-y-3">
+                            <h3 className="text-xl font-semibold text-white">{course.title}</h3>
+                            <div className="space-y-2">
+                              <div className="w-full bg-white/20 rounded-full h-2">
+                                <div
+                                  className="h-2 bg-white rounded-full transition-all duration-300"
+                                  style={{ width: `${course.progress}%` }}
+                                />
+                              </div>
+                              <p className="text-white/80 text-sm">{course.progress}% Complete</p>
                             </div>
-                            <p className="text-white/80 text-sm">{course.progress}% Complete</p>
                           </div>
                         </div>
-                      </div>
+                    </Link>
 
                       {/* Course Details */}
                       <div className="p-6 space-y-4">
@@ -243,9 +244,9 @@ const CoursesPage = () => {
                                                 <button className={`w-full py-3 px-4 rounded-xl font-medium transition-all duration-200 ${course.buttonStyle} hover:shadow-lg`}>
                                                   {course.buttonText}
                                                 </button>
-                                              </Link>                      </div>
-                    </div>
-                  </Link>
+                                              </Link>
+                      </div>
+                  </div>
                 ))}
               </div>
             ) : (

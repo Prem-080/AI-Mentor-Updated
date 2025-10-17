@@ -3,9 +3,9 @@ import { Search, Bell, Menu, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
-const Header = ({ sidebarOpen, setSidebarOpen, title = '', userName = 'Eliza Chris', userAvatar }) => {
+const Header = ({ sidebarOpen, setSidebarOpen, title = '', userAvatar }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const dropdownRef = useRef(null)
 
@@ -75,7 +75,7 @@ const Header = ({ sidebarOpen, setSidebarOpen, title = '', userName = 'Eliza Chr
               className="text-gray-900 font-medium hidden sm:block cursor-pointer select-none"
               onClick={toggleDropdown}
             >
-              {userName}
+              {user ? user.name : 'Eliza Chris'}
             </span>
             {dropdownOpen && (
               <div className="absolute right-0 mt-10 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-50">

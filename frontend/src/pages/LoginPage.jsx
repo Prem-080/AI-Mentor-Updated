@@ -69,7 +69,7 @@ export default function Index() {
       {/* Background Images */}
      
 
-      <div className="flex min-h-screen mt-5 ">
+      <div className="flex flex-col lg:flex-row min-h-screen mt-5 ">
         {/* Left Side - Branding */}
         <div className="flex-1 flex flex-col justify-center px-8 lg:px-16 relative z-10">
           {/* Logo */}
@@ -262,14 +262,6 @@ export default function Index() {
         </div>
       </div>
 
-      {/* Responsive Mobile Layout */}
-      <style jsx>{`
-        @media (max-width: 1024px) {
-          .flex {
-            flex-direction: column;
-          }
-        }
-      `}</style>
     </div>
   );
 }

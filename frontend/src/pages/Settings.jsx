@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import {
@@ -22,16 +23,25 @@ export default function Settings() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSetting, setActiveSetting] = useState("Profile");
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
-    firstName: "Eliza",
-    lastName: "Chris",
-    email: "sarah.johnson@email.com",
-    bio: "Passionate about AI and machine learning. Currently pursuing advanced courses in data science."
+    firstName: "",
+    lastName: "",
+    email: "",
+    bio: ""
   });
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  useEffect(() => {
+    if (user) {
+      const [firstName, ...lastName] = user.name.split(' ');
+      setFormData({ firstName: firstName, lastName: lastName.join(' '), email: user.email, bio: user.bio || "Passionate about AI and machine learning. Currently pursuing advanced courses in data science." });
+    }
+  }, [user]);
+
 
   return (
     <div className="min-h-screen bg-[#F6F8FA] flex flex-col">
@@ -96,7 +106,7 @@ export default function Settings() {
                   <div className="flex flex-col items-center">
                     <div className="relative mb-6">
                       <img 
-                        src="https://api.dicebear.com/8.x/initials/svg?seed=Eliza%20Chris" 
+                        src={`https://api.dicebear.com/8.x/initials/svg?seed=${formData.firstName}%20${formData.lastName}`}
                         alt="Profile" 
                         className="w-32 h-32 rounded-full border-4 border-[rgba(255,135,89,0.65)] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)]"
                       />
@@ -104,7 +114,7 @@ export default function Settings() {
                         <Camera className="w-[14px] h-[14px] text-white" />
                       </button>
                     </div>
-                    <h2 className="text-[20px] font-semibold text-[#1F2937] font-[Inter] mb-1">Eliza Chris</h2>
+                    <h2 className="text-[20px] font-semibold text-[#1F2937] font-[Inter] mb-1">{formData.firstName} {formData.lastName}</h2>
                     <p className="text-[16px] text-[#6B7280] font-[Inter]">Premium Member</p>
                   </div>
 

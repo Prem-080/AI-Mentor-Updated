@@ -4,16 +4,17 @@ import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
   Pause,
+  Play,
   Volume2,
   VolumeX,
   Maximize,
   Minimize,
   ChevronRight,
+  ChevronDown,
+  Check,
+  Circle,
+  FileText,
 } from "lucide-react";
-import ChevronDownIcon from '/AI_Tutor_New_UI/Icons/keyboard_arrow_down.svg?react';
-import PlayIcon from '/AI_Tutor_New_UI/Icons/play_button.svg?react';
-import CheckMarkIcon from '/AI_Tutor_New_UI/Icons/check_mark.svg?react';
-import DottedCircleIcon from '/AI_Tutor_New_UI/Icons/dotted_circle.svg?react';
 
 export default function Learning() {
   const navigate = useNavigate();
@@ -186,7 +187,7 @@ export default function Learning() {
                   className="w-full flex items-center justify-between px-3 py-3 rounded-lg border border-[#909090] bg-white hover:bg-gray-50 transition-colors"
                 >
                   <span className="text-[#3B4453] font-['Space_Grotesk']">{module.title}</span>
-                  <ChevronDownIcon className={`w-4 h-4 transition-transform ${expandedModule === module.id ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 transition-transform ${expandedModule === module.id ? 'rotate-180' : ''}`} />
                 </button>
 
                 {expandedModule === module.id && module.lessons.length > 0 && (
@@ -209,11 +210,9 @@ export default function Learning() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               {lesson.type === 'document' ? (
-                                <svg className="w-3 h-4 flex-shrink-0" viewBox="0 0 12 16" fill="none">
-                                  <path d="M2 0C0.896875 0 0 0.896875 0 2V14C0 15.1031 0.896875 16 2 16H10C11.1031 16 12 15.1031 12 14V5H8C7.44688 5 7 4.55312 7 4V0H2ZM8 0V4H12L8 0ZM3.5 8H8.5C8.775 8 9 8.225 9 8.5C9 8.775 8.775 9 8.5 9H3.5C3.225 9 3 8.775 3 8.5C3 8.225 3.225 8 3.5 8ZM3.5 10H8.5C8.775 10 9 10.225 9 10.5C9 10.775 8.775 11 8.5 11H3.5C3.225 11 3 10.775 3 10.5C3 10.225 3.225 10 3.5 10ZM3.5 12H8.5C8.775 12 9 12.225 9 12.5C9 12.775 8.775 13 8.5 13H3.5C3.225 13 3 12.775 3 12.5C3 12.225 3.225 12 3.5 12Z" fill="#3B4453"/>
-                                </svg>
+                                <FileText className="w-3 h-4 flex-shrink-0 text-[#3B4453]" />
                               ) : (
-                                <PlayIcon className="w-3 h-4 fill-[#3B4453] text-[#3B4453]" />
+                                <Play className="w-3 h-4 fill-[#3B4453] text-[#3B4453]" />
                               )}
                               <div>
                                 <div className="text-black font-normal">{lesson.title}</div>
@@ -222,15 +221,15 @@ export default function Learning() {
                             </div>
                             
                             {isPreviouslyCompleted && (
-                              <CheckMarkIcon className="w-4 h-4 flex-shrink-0" />
+                              <Check className="w-4 h-4 flex-shrink-0" />
                             )}
-                            
+
                             {!isPreviouslyCompleted && !isActive && (
-                              <DottedCircleIcon className="w-4 h-4 flex-shrink-0" />
+                              <Circle className="w-4 h-4 flex-shrink-0" />
                             )}
 
                             {isActive && (
-                              <CheckMarkIcon className="w-4 h-4 flex-shrink-0" />
+                              <Check className="w-4 h-4 flex-shrink-0" />
                             )}
                           </div>
                         </div>

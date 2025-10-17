@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Home, BookOpen, MessageCircle, BarChart3, Settings, PlayCircle } from 'lucide-react'
 
 const Sidebar = ({
   sidebarOpen,
@@ -9,8 +9,8 @@ const Sidebar = ({
   sidebarCollapsed,
   setSidebarCollapsed,
   activePage = 'dashboard'
-}) => {
-  const { logout } = useAuth()
+}) => { 
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -101,7 +101,12 @@ const Sidebar = ({
                   tabIndex={0}
                   onKeyDown={(e) => { if (e.key === 'Enter') navigate(item.path) }}
                 >
-                  <img src={item.icon} className="w-5 h-5 flex-shrink-0" alt="" />
+                  {item.id === 'dashboard' && <Home className="w-5 h-5 flex-shrink-0" />}
+                  {item.id === 'courses' && <BookOpen className="w-5 h-5 flex-shrink-0" />}
+                  {item.id === 'discussions' && <MessageCircle className="w-5 h-5 flex-shrink-0" />}
+                  {item.id === 'analytics' && <BarChart3 className="w-5 h-5 flex-shrink-0" />}
+                  {item.id === 'settings' && <Settings className="w-5 h-5 flex-shrink-0" />}
+                  {item.id === 'watched' && <PlayCircle className="w-5 h-5 flex-shrink-0" />}
                   {!sidebarCollapsed && (
                     <span className={`ml-3 ${isActive ? 'font-medium' : ''}`}>{item.label}</span>
                   )}
@@ -127,8 +132,8 @@ const Sidebar = ({
                   className="w-8 h-8 rounded-full"
                 />
                 <div className="ml-3 flex-1">
-                  <div className="text-sm font-medium text-gray-900">Eliza Chris</div>
-                  <div className="text-xs text-gray-500">elizachris@gmail.com</div>
+                  <div className="text-sm font-medium text-gray-900">{user ? user.name : 'Eliza Chris'}</div>
+                  <div className="text-xs text-gray-500">{user ? user.email : 'elizachris@gmail.com'}</div>
                 </div>
                 <button onClick={handleLogout} className="text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">
                   Log out
