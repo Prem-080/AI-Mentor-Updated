@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Header from '../components/Header'
 import Sidebar from '../components/Sidebar'
+import { useAuth } from '../context/AuthContext'
 import {
   Heart,
   Reply,
@@ -12,65 +13,94 @@ import {
 } from 'lucide-react'
 
 const DiscussionsPage = () => {
+  const { user } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [activeTab, setActiveTab] = useState('Recent')
   const [questionTitle, setQuestionTitle] = useState('')
   const [questionDescription, setQuestionDescription] = useState('')
   const [replyText, setReplyText] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   const tabs = ['Recent', 'Unanswered', 'My Doubts', 'Popular']
 
-  const initialDiscussions = [
-    {
-      id: 1,
-      user: {
-        name: "Alex Chen",
-        avatar: "AI_Tutor_New_UI/Discussion_Room/alexchen.jpg",
-        level: "Beginner",
-        levelColor: "bg-blue-100 text-blue-800"
-      },
-      timeAgo: "2 hours ago",
-      title: "How to handle state management in React?",
-      description: "I'm struggling with managing state across multiple components. Should I use Context API or Redux? What are the best practices for a medium-sized application?",
-      likes: 12,
-      replies: 5,
-      hasAISuggestion: true,
-      aiSuggestion: {
-        text: "For medium-sized apps, Context API is often sufficient. Consider Redux only if you need time-travel debugging or complex state logic. Here are some resources that might help..."
-      },
-      responses: [
-        {
-          user: {
-            name: "Sarah Kim",
-            avatar: "AI_Tutor_New_UI/Discussion_Room/sarahkim.jpg",
-            level: "Expert",
-            levelColor: "bg-green-100 text-green-800"
-          },
-          timeAgo: "1 hour ago",
-          text: "I'd recommend starting with Context API for your use case. It's simpler and built into React. Only move to Redux if you find Context becoming unwieldy.",
-          likes: 8
-        }
-      ]
-    },
-    {
-      id: 2,
-      user: {
-        name: "Mike Johnson",
-        avatar: "/ui/avatar-3.png",
-        level: "Intermediate",
-        levelColor: "bg-yellow-100 text-yellow-800"
-      },
-      timeAgo: "4 hours ago",
-      title: "Best practices for API error handling?",
-      description: "What's the recommended way to handle API errors in a React application? Should I use try-catch blocks or error boundaries?",
-      likes: 7,
-      replies: 3,
-      hasAISuggestion: false
-    }
-  ]
+  // Fetch discussions from API
+  useEffect(() => {
+    fetchDiscussions()
+  }, [])
 
-  const [discussions, setDiscussions] = useState(initialDiscussions)
+  const fetchDiscussions = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('http://localhost:5000/api/discussions', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch discussions')
+      }
+
+      const data = await response.json()
+      setDiscussions(data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const createDiscussion = async (title, description) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('http://localhost:5000/api/discussions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ title, description })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create discussion')
+      }
+
+      const newDiscussion = await response.json()
+      setDiscussions([newDiscussion, ...discussions])
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  const addReply = async (discussionId, text) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5000/api/discussions/${discussionId}/reply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to add reply')
+      }
+
+      const updatedDiscussion = await response.json()
+      setDiscussions(discussions.map(d => d._id === discussionId ? updatedDiscussion : d))
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+
+
+  const [discussions, setDiscussions] = useState([])
 
   const myCourses = [
     {
@@ -102,35 +132,18 @@ const DiscussionsPage = () => {
     }
   ]
 
-  const handleSubmitQuestion = (e) => {
+  const handleSubmitQuestion = async (e) => {
     e.preventDefault();
     if (!questionTitle.trim() || !questionDescription.trim()) return;
 
-    const newQuestion = {
-      id: Date.now(),
-      user: {
-        name: "Eliza Chris", // Placeholder for the current user
-        avatar: "/ui/avatar-4.png",
-        level: "Beginner",
-        levelColor: "bg-blue-100 text-blue-800",
-      },
-      timeAgo: "Just now",
-      title: questionTitle,
-      description: questionDescription,
-      likes: 0,
-      replies: 0,
-      hasAISuggestion: false,
-      responses: [],
-    };
-
-    setDiscussions([newQuestion, ...discussions]);
+    await createDiscussion(questionTitle, questionDescription);
     setQuestionTitle('')
     setQuestionDescription('')
   }
 
-  const handleReply = (discussionId) => {
-    // Handle reply submission logic here
-    console.log('Reply submitted for discussion:', discussionId, replyText)
+  const handleReply = async (discussionId) => {
+    if (!replyText.trim()) return;
+    await addReply(discussionId, replyText);
     setReplyText('')
   }
 
@@ -217,12 +230,19 @@ const DiscussionsPage = () => {
 
             {/* Discussion Threads */}
             <div className="space-y-4 sm:space-y-6">
-              {discussions.map((discussion) => (
-                <div key={discussion.id} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm">
+              {loading ? (
+                <div className="text-center py-8">Loading discussions...</div>
+              ) : error ? (
+                <div className="text-center py-8 text-red-500">{error}</div>
+              ) : discussions.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">No discussions yet. Be the first to ask a question!</div>
+              ) : (
+                discussions.map((discussion) => (
+                <div key={discussion._id} className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm">
                   {/* Discussion Header */}
                   <div className="flex items-start space-x-3 sm:space-x-4 mb-4">
                     <img
-                      src={discussion.user.avatar}
+                      src="/ui/avatar-4.png"
                       alt={discussion.user.name}
                       className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0"
                     />
@@ -230,10 +250,10 @@ const DiscussionsPage = () => {
                       <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 mb-1">
                         <span className="font-medium text-gray-900">{discussion.user.name}</span>
                         <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${discussion.user.levelColor}`}>
-                            {discussion.user.level}
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            Beginner
                           </span>
-                          <span className="text-sm text-gray-500">{discussion.timeAgo}</span>
+                          <span className="text-sm text-gray-500">{new Date(discussion.createdAt).toLocaleString()}</span>
                         </div>
                       </div>
                       <h3 className="text-lg font-medium text-gray-900 mb-2">{discussion.title}</h3>
@@ -241,11 +261,11 @@ const DiscussionsPage = () => {
                       <div className="flex flex-wrap items-center gap-4 sm:gap-6">
                         <button className="flex items-center space-x-2 text-gray-600 hover:text-red-500">
                           <Heart className="w-4 h-4" />
-                          <span className="text-sm">{discussion.likes}</span>
+                          <span className="text-sm">{discussion.likes.length}</span>
                         </button>
                         <button className="flex items-center space-x-2 text-gray-600 hover:text-blue-500">
                           <Reply className="w-4 h-4" />
-                          <span className="text-sm">{discussion.replies} replies</span>
+                          <span className="text-sm">{discussion.replies.length} replies</span>
                         </button>
                         <button className="flex items-center space-x-2 text-gray-600 hover:text-yellow-500">
                           <Bookmark className="w-4 h-4" />
@@ -271,29 +291,29 @@ const DiscussionsPage = () => {
                   )}
 
                   {/* Responses */}
-                  {discussion.responses && discussion.responses.map((response, index) => (
+                  {discussion.replies && discussion.replies.map((reply, index) => (
                     <div key={index} className="ml-4 sm:ml-8 border-l-2 border-gray-100 pl-4 sm:pl-6 mb-4">
                       <div className="flex items-start space-x-3">
                         <img
-                          src={response.user.avatar}
-                          alt={response.user.name}
+                          src="/ui/avatar-4.png"
+                          alt={reply.user.name}
                           className="w-6 h-6 sm:w-8 sm:h-8 rounded-full flex-shrink-0"
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 mb-1">
-                            <span className="font-medium text-gray-900">{response.user.name}</span>
+                            <span className="font-medium text-gray-900">{reply.user.name}</span>
                             <div className="flex items-center space-x-2">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${response.user.levelColor}`}>
-                                {response.user.level}
+                              <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Beginner
                               </span>
-                              <span className="text-sm text-gray-500">{response.timeAgo}</span>
+                              <span className="text-sm text-gray-500">{new Date(reply.createdAt).toLocaleString()}</span>
                             </div>
                           </div>
-                          <p className="text-gray-700 mb-2">{response.text}</p>
+                          <p className="text-gray-700 mb-2">{reply.text}</p>
                           <div className="flex items-center space-x-4">
                             <button className="flex items-center space-x-1 text-gray-600 hover:text-red-500">
                               <Heart className="w-3 h-3" />
-                              <span className="text-xs">{response.likes}</span>
+                              <span className="text-xs">{reply.likes.length}</span>
                             </button>
                             <button className="text-xs text-gray-600 hover:text-blue-500">Reply</button>
                           </div>
@@ -319,7 +339,7 @@ const DiscussionsPage = () => {
                       />
                       <div className="flex justify-end mt-2">
                         <button
-                          onClick={() => handleReply(discussion.id)}
+                          onClick={() => handleReply(discussion._id)}
                           className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
                         >
                           Reply
@@ -328,7 +348,8 @@ const DiscussionsPage = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </main>

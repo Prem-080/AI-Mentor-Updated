@@ -10,6 +10,7 @@ import {
   Globe,
   Camera
 } from "lucide-react";
+import axios from "axios";
 
 const settingsNavItems = [
   { icon: User, label: "Profile" },
@@ -23,22 +24,55 @@ export default function Settings() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSetting, setActiveSetting] = useState("Profile");
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     bio: ""
   });
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleSaveChanges = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        'http://localhost:5000/api/users/profile',
+        {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          bio: formData.bio
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      updateUser(response.data);
+      alert('Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (user) {
-      const [firstName, ...lastName] = user.name.split(' ');
-      setFormData({ firstName: firstName, lastName: lastName.join(' '), email: user.email, bio: user.bio || "Passionate about AI and machine learning. Currently pursuing advanced courses in data science." });
+      setFormData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        bio: user.bio || "Passionate about AI and machine learning. Currently pursuing advanced courses in data science."
+      });
     }
   }, [user]);
 
@@ -182,10 +216,11 @@ export default function Settings() {
                     Cancel
                   </button>
                   <button
-                    type="submit"
-                    className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-[#00BEA5] to-[#00BEA5] text-white text-[16px] font-medium font-[Inter] hover:opacity-90"
+                    onClick={handleSaveChanges}
+                    disabled={loading}
+                    className="h-[50px] px-6 rounded-xl bg-gradient-to-r from-[#00BEA5] to-[#00BEA5] text-white text-[16px] font-medium font-[Inter] hover:opacity-90 disabled:opacity-50"
                   >
-                    Save Changes
+                    {loading ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
               </div>

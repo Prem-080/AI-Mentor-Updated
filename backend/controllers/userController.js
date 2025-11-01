@@ -13,7 +13,8 @@ const generateToken = (id) => {
 // @access  Public
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { firstName, lastName, email, password } = req.body;
+    const name = `${firstName} ${lastName}`;
 
     // Check if user exists
     const userExists = await User.findOne({ email });
@@ -24,6 +25,8 @@ const registerUser = async (req, res) => {
 
     // Create user
     const user = await User.create({
+      firstName,
+      lastName,
       name,
       email,
       password,
@@ -32,9 +35,12 @@ const registerUser = async (req, res) => {
     if (user) {
       res.status(201).json({
         _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
         name: user.name,
         email: user.email,
         role: user.role,
+        bio: user.bio,
         purchasedCourses: user.purchasedCourses,
         token: generateToken(user._id),
       });
@@ -60,9 +66,12 @@ const loginUser = async (req, res) => {
     if (user && (await user.matchPassword(password))) {
       res.json({
         _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
         name: user.name,
         email: user.email,
         role: user.role,
+        bio: user.bio,
         purchasedCourses: user.purchasedCourses,
         token: generateToken(user._id),
       });
@@ -85,9 +94,12 @@ const getUserProfile = async (req, res) => {
     if (user) {
       res.json({
         _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
         name: user.name,
         email: user.email,
         role: user.role,
+        bio: user.bio,
         purchasedCourses: user.purchasedCourses,
       });
     } else {
@@ -186,4 +198,39 @@ const updateCourseProgress = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, getUserProfile, purchaseCourse, updateCourseProgress };
+// @desc    Update user profile
+// @route   PUT /api/users/profile
+// @access  Private
+const updateUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      user.firstName = req.body.firstName || user.firstName;
+      user.lastName = req.body.lastName || user.lastName;
+      user.name = `${req.body.firstName || user.firstName || ''} ${req.body.lastName || user.lastName || ''}`.trim();
+      user.email = req.body.email || user.email;
+      user.bio = req.body.bio || user.bio;
+
+      const updatedUser = await user.save();
+
+      res.json({
+        _id: updatedUser._id,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        bio: updatedUser.bio,
+        purchasedCourses: updatedUser.purchasedCourses,
+      });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export { registerUser, loginUser, getUserProfile, updateUserProfile, purchaseCourse, updateCourseProgress };

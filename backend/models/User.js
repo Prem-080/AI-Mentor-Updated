@@ -3,6 +3,14 @@ import bcrypt from 'bcryptjs';
 
 const userSchema = mongoose.Schema(
   {
+    firstName: {
+      type: String,
+      required: false,
+    },
+    lastName: {
+      type: String,
+      required: false,
+    },
     name: {
       type: String,
       required: true,
@@ -20,6 +28,10 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
       default: 'user',
+    },
+    bio: {
+      type: String,
+      default: "",
     },
     purchasedCourses: [{
       courseId: {

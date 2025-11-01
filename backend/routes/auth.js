@@ -32,9 +32,12 @@ router.post('/register', async (req, res) => {
     if (user) {
       res.status(201).json({
         _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
         name: user.name,
         email: user.email,
         role: user.role,
+        bio: user.bio,
         purchasedCourses: user.purchasedCourses,
         token: generateToken(user._id),
       });
@@ -57,9 +60,12 @@ router.post('/login', async (req, res) => {
     if (user && (await bcrypt.compare(password, user.password))) {
       res.json({
         _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
         name: user.name,
         email: user.email,
         role: user.role,
+        bio: user.bio,
         purchasedCourses: user.purchasedCourses,
         token: generateToken(user._id),
       });
