@@ -18,7 +18,7 @@ const getCourses = async (req, res) => {
 // @access  Public
 const getCourseById = async (req, res) => {
     try {
-      const course = await Course.findOne({ id: req.params.id });
+      const course = await Course.findOne({ id: parseInt(req.params.id) });
       if (course) {
         res.json(course);
       } else {
@@ -35,7 +35,7 @@ const getCourseById = async (req, res) => {
 // @access  Private (user must have purchased the course)
 const getCourseLearningData = async (req, res) => {
   try {
-    const courseId = req.params.id;
+    const courseId = parseInt(req.params.id);
     const userId = req.user._id;
 
     // Check if user has purchased this course
@@ -46,9 +46,16 @@ const getCourseLearningData = async (req, res) => {
       return res.status(403).json({ message: 'Access denied. Course not purchased.' });
     }
 
-    const course = await Course.findOne({ id: courseId }, 'id title modules course currentLesson');
+    const course = await Course.findOne({ id: courseId }, 'id title modules course');
     if (course) {
-      res.json(course);
+      // Get user's current lesson for this course
+      const purchasedCourse = user.purchasedCourses.find(pc => pc.courseId == courseId);
+      const currentLesson = purchasedCourse?.progress?.currentLesson || null;
+
+      res.json({
+        ...course.toObject(),
+        currentLesson
+      });
     } else {
       res.status(404).json({ message: 'Course learning data not found' });
     }
@@ -60,17 +67,58 @@ const getCourseLearningData = async (req, res) => {
 
 // @desc    Get stats cards data
 // @route   GET /api/courses/stats/cards
-// @access  Public
+// @access  Private
 const getStatsCards = async (req, res) => {
   try {
-    // Find a document that actually has statsCards data.
-    const course = await Course.findOne({ 'statsCards.0': { $exists: true } }, 'statsCards');
+    const userId = req.user._id;
 
-    if (course && course.statsCards && course.statsCards.length > 0) {
-      res.json({ statsCards: course.statsCards });
-    } else {
-      res.status(404).json({ message: 'Stats cards not found' });
+    // Get user's purchased courses
+    const User = (await import('../models/User.js')).default;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+
+    const purchasedCourseIds = user.purchasedCourses.map(course => course.courseId);
+
+    // Get course data for purchased courses
+    const courses = await Course.find(
+      { id: { $in: purchasedCourseIds } },
+      'id title'
+    );
+
+    // Calculate stats
+    const totalCourses = user.purchasedCourses.length;
+    const completedCourses = user.purchasedCourses.filter(course =>
+      course.progress?.completedLessons?.length > 0
+    ).length;
+
+    const statsCards = [
+      {
+        icon: "/AI_Tutor_New_UI/Icons/play_button.svg",
+        value: `${totalCourses - completedCourses}`,
+        label: "Courses in Progress",
+        bgColor: "bg-purple-50",
+        iconBg: "bg-purple-100"
+      },
+      {
+        icon: "/AI_Tutor_New_UI/Icons/check_mark.svg",
+        value: `${completedCourses}`,
+        label: "Completed",
+        bgColor: "bg-green-50",
+        iconBg: "bg-green-100"
+      },
+      {
+        icon: "/AI_Tutor_New_UI/Icons/time_spent.svg",
+        value: `${Math.round(user.analytics.totalHours)}h`,
+        label: "Learning Hours",
+        bgColor: "bg-blue-50",
+        iconBg: "bg-blue-100"
+      }
+    ];
+
+    res.json({ statsCards });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server Error' });
@@ -183,14 +231,8 @@ const addCourse = async (req, res) => {
       course: {
         title,
         subtitle: category,
-        logo: image,
-        progress: 0
-      },
-      currentLesson: null,
-      // Stats fields
-      statsCards: [],
-      courseCards: [],
-      popularCourses: []
+        logo: image
+      }
     });
 
     const createdCourse = await course.save();
@@ -255,10 +297,7 @@ const updateLessonVideo = async (req, res) => {
       }
     }
 
-    // Update currentLesson if it matches
-    if (course.currentLesson && course.currentLesson.id === lessonId) {
-      course.currentLesson.youtubeUrl = youtubeUrl;
-    }
+    // Note: currentLesson is now stored in user model, not course model
 
     if (!lessonUpdated) {
       return res.status(404).json({ message: 'Lesson not found' });

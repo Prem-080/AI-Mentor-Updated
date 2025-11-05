@@ -3,7 +3,7 @@ import { Search, Bell, Menu, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
-const Header = ({ sidebarOpen, setSidebarOpen, title = '', userAvatar }) => {
+const Header = ({ sidebarOpen, setSidebarOpen }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -66,7 +66,7 @@ const Header = ({ sidebarOpen, setSidebarOpen, title = '', userAvatar }) => {
           </div>
           <div className="flex items-center space-x-3 relative" ref={dropdownRef}>
             <img
-              src={userAvatar || "AI_Tutor_New_UI/Discussion_Room/sarahkim.jpg"}
+              src={`https://api.dicebear.com/8.x/initials/svg?seed=${user ? user.firstName : 'Eliza'}%20${user ? user.lastName : 'Chris'}`}
               alt="User Avatar"
               className="w-8 h-8 rounded-full cursor-pointer"
               onClick={toggleDropdown}

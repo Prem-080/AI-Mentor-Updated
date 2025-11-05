@@ -1,0 +1,2 @@
+- [x] Update Header.jsx to use dynamic profile icon from Dicebear API based on user.firstName and user.lastName
+- [x] Update Sidebar.jsx to use dynamic profile icon from Dicebear API based on user.firstName and user.lastName

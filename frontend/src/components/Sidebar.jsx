@@ -23,7 +23,13 @@ const Sidebar = ({
   useEffect(() => {
     const fetchNavigationItems = async () => {
       try {
-        const response = await fetch('/data/sidebar.json'); // Adjust path if needed
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:5000/api/sidebar/navigation', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
         const data = await response.json();
         setNavigationItems(data);
       } catch (error) {
@@ -98,8 +104,8 @@ const Sidebar = ({
             <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 border border-purple-100">
               <div className="flex items-center">
                 <img
-                  src="AI_Tutor_New_UI/Discussion_Room/sarahkim.jpg"
-                  alt="Eliza Chris"
+                  src={`https://api.dicebear.com/8.x/initials/svg?seed=${user ? user.firstName : 'Eliza'}%20${user ? user.lastName : 'Chris'}`}
+                  alt={user ? user.name : 'Eliza Chris'}
                   className="w-8 h-8 rounded-full"
                 />
                 <div className="ml-3 flex-1">
@@ -119,8 +125,8 @@ const Sidebar = ({
           <div className="absolute bottom-4 left-4 right-4">
             <div className="flex justify-center">
               <img
-                src="AI_Tutor_New_UI/Discussion_Room/sarahkim.jpg"
-                alt="Eliza Chris"
+                src={`https://api.dicebear.com/8.x/initials/svg?seed=${user ? user.firstName : 'Eliza'}%20${user ? user.lastName : 'Chris'}`}
+                alt={user ? user.name : 'Eliza Chris'}
                 className="w-10 h-10 rounded-full border-2 border-purple-200"
               />
             </div>

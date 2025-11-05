@@ -37,9 +37,15 @@ const Dashboard = () => {
     const fetchAllData = async () => {
       setLoading(true);
       try {
+        const token = localStorage.getItem('token');
+        const headers = {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        };
+
         const [coursesRes, statsRes] = await Promise.all([
-          fetch('http://localhost:5000/api/courses'),
-          fetch('http://localhost:5000/api/courses/stats/cards')
+          fetch('http://localhost:5000/api/courses', { headers }),
+          fetch('http://localhost:5000/api/courses/stats/cards', { headers })
         ]);
 
         if (!coursesRes.ok) {

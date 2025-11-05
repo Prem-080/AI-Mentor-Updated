@@ -94,45 +94,8 @@ const courseSchema = new mongoose.Schema({
   course: {
     title: String,
     subtitle: String,
-    logo: String,
-    progress: Number
-  },
-  currentLesson: currentLessonSchema,
-
-  // Stats / Dashboard fields
-  statsCards: [{
-    icon: String,
-    value: String,
-    label: String,
-    bgColor: String,
-    iconBg: String
-  }],
-  courseCards: [{
-    id: Number,
-    title: String,
-    status: String,
-    progress: Number,
-    lessons: String,
-    level: String,
-    levelColor: String,
-    backgroundGradient: String,
-    backgroundImage: String,
-    buttonStyle: String,
-    buttonText: String
-  }],
-  popularCourses: [{
-    id: Number,
-    title: String,
-    category: String,
-    categoryColor: String,
-    lessons: String,
-    level: String,
-    price: String,
-    rating: String,
-    students: String,
-    image: String,
-    isBookmarked: Boolean
-  }]
+    logo: String
+  }
 });
 
 const Course = mongoose.model('Course', courseSchema);

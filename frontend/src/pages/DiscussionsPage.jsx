@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import Header from '../components/Header'
 import Sidebar from '../components/Sidebar'
 import { useAuth } from '../context/AuthContext'
-import coursesData from '../../public/data/courses.json'
 import {
   Heart,
   Reply,
@@ -105,51 +104,72 @@ const DiscussionsPage = () => {
   const [myCourses, setMyCourses] = useState([])
 
   // Function to map purchased courses to display format
-  const mapPurchasedCoursesToDisplay = (purchasedCourses) => {
+  const mapPurchasedCoursesToDisplay = async (purchasedCourses) => {
     if (!purchasedCourses || purchasedCourses.length === 0) return []
 
-    return purchasedCourses.map((purchasedCourse, index) => {
-      const courseCard = coursesData.courseCards.find(card => card.id === purchasedCourse.courseId)
-      if (!courseCard) return null
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('http://localhost:5000/api/courses/my-courses', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
 
-      const completedLessons = purchasedCourse.progress?.completedLessons?.length || 0
-      const totalLessons = parseInt(courseCard.lessons.split(' of ')[1]) || 1
-      const progress = Math.round((completedLessons / totalLessons) * 100)
-
-      const currentLesson = purchasedCourse.progress?.currentLesson
-      const subtitle = currentLesson ? `Lesson ${currentLesson.lessonId}: ${currentLesson.moduleTitle}` : courseCard.lessons
-
-      // Map courseId to image paths
-      const imageMap = {
-        1: "AI_Tutor_New_UI/Discussion_Room/react_fundamentals.png",
-        2: "AI_Tutor_New_UI/Discussion_Room/python_for_ai.png",
-        3: "AI_Tutor_New_UI/Discussion_Room/digital_marketing.png"
+      if (!response.ok) {
+        throw new Error('Failed to fetch courses')
       }
 
-      const progressColorMap = {
-        1: "bg-indigo-600",
-        2: "bg-purple-600",
-        3: "bg-cyan-600"
-      }
+      const coursesData = await response.json()
 
-      return {
-        title: purchasedCourse.courseTitle,
-        subtitle: subtitle,
-        progress: progress,
-        lessons: `${completedLessons}/${totalLessons}`,
-        image: imageMap[purchasedCourse.courseId] || "AI_Tutor_New_UI/Discussion_Room/react_fundamentals.png",
-        progressColor: progressColorMap[purchasedCourse.courseId] || "bg-indigo-600",
-        isActive: index === 0 // First course is active
-      }
-    }).filter(course => course !== null)
+      return purchasedCourses.map((purchasedCourse, index) => {
+        const courseCard = coursesData.find(card => card.id === purchasedCourse.courseId)
+        if (!courseCard) return null
+
+        const completedLessons = purchasedCourse.progress?.completedLessons?.length || 0
+        const totalLessons = parseInt(courseCard.lessons.split(' of ')[1]) || 1
+        const progress = Math.round((completedLessons / totalLessons) * 100)
+
+        const currentLesson = purchasedCourse.progress?.currentLesson
+        const subtitle = currentLesson ? `Lesson ${currentLesson.lessonId}: ${currentLesson.moduleTitle}` : courseCard.lessons
+
+        // Map courseId to image paths
+        const imageMap = {
+          1: "AI_Tutor_New_UI/Discussion_Room/react_fundamentals.png",
+          2: "AI_Tutor_New_UI/Discussion_Room/python_for_ai.png",
+          3: "AI_Tutor_New_UI/Discussion_Room/digital_marketing.png"
+        }
+
+        const progressColorMap = {
+          1: "bg-indigo-600",
+          2: "bg-purple-600",
+          3: "bg-cyan-600"
+        }
+
+        return {
+          title: purchasedCourse.courseTitle,
+          subtitle: subtitle,
+          progress: progress,
+          lessons: `${completedLessons}/${totalLessons}`,
+          image: imageMap[purchasedCourse.courseId] || "AI_Tutor_New_UI/Discussion_Room/react_fundamentals.png",
+          progressColor: progressColorMap[purchasedCourse.courseId] || "bg-indigo-600",
+          isActive: index === 0 // First course is active
+        }
+      }).filter(course => course !== null)
+    } catch (error) {
+      console.error('Error fetching courses:', error)
+      return []
+    }
   }
 
   // Load dynamic courses data
   useEffect(() => {
-    if (user && user.purchasedCourses) {
-      const dynamicCourses = mapPurchasedCoursesToDisplay(user.purchasedCourses)
-      setMyCourses(dynamicCourses)
+    const loadCourses = async () => {
+      if (user && user.purchasedCourses) {
+        const dynamicCourses = await mapPurchasedCoursesToDisplay(user.purchasedCourses)
+        setMyCourses(dynamicCourses)
+      }
     }
+    loadCourses()
   }, [user])
 
   const handleSubmitQuestion = async (e) => {

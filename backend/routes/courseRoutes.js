@@ -19,7 +19,7 @@ const router = express.Router();
 // Public routes
 router.route('/').get(getCourses);
 router.route('/:id').get(getCourseById);
-router.route('/stats/cards').get(getStatsCards);
+router.route('/stats/cards').get(protect, getStatsCards);
 
 // Protected routes
 router.route('/my-courses').get(protect, getMyCourses);
