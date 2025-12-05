@@ -304,8 +304,8 @@ export default function Learning() {
       <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
       {/* Sidebar */}
-      <div className="fixed left-0 top-16 h-full w-80 bg-white border-r border-gray-200 overflow-y-scroll z-10">
-        <div className="p-6">
+      <div className="fixed left-0 top-16 bottom-0 w-80 bg-white border-r border-gray-200 overflow-y-auto z-10">
+        <div className="p-6 h-full overflow-y-auto">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900">{learningData?.course?.title || learningData?.title || 'Course'}</h2>
             <button onClick={() => navigate('/courses')} className="text-gray-400 hover:text-gray-600">
