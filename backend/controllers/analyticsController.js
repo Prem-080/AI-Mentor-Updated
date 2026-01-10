@@ -1,3 +1,4 @@
+
 import User from "../models/User.js";
 
 // @desc    Get user analytics
@@ -16,32 +17,49 @@ const getUserAnalytics = async (req, res) => {
       user.analytics = {};
     }
 
-    const calculateAttendance = () => {
-      const daysStudied = user.analytics?.daysStudied || 1;
-      const lastStudyDate = user.analytics?.lastStudyDate;
-      const studySessions = user.analytics?.studySessions;
-      const today = new Date();
-      console.log(studySessions);
-      
+    const calculateAttendance = (studySessions) => {
+      if (!studySessions || studySessions.length == 0) {
+        return 0;
+      }
+      //Days of Study Sessions
+      const datesSet = new Set(
+        studySessions
+          .map((session) => new Date(session.date).toDateString())
+          .sort((a, b) => a - b)
+      );
+      const studyDates = [...datesSet];
+      console.log(studyDates);
 
-      const firstDate = studySessions.length > 0 ? new Date(studySessions[0].date) : null;
+      const daysStudied = studyDates.length;
+      console.log(daysStudied);
 
-      const attendance = (daysStudied / studySessions.length * 100).toFixed(2);
-      return (attendance);
-    }
+      // Calculating Total Days from firstDate
+      const firstDate = studyDates.length != 0 ? new Date(studyDates[0]) : null;
+      const current = new Date();
+      const first = new Date(firstDate);
+      first.setHours(0, 0, 0, 0);
+      current.setHours(0, 0, 0, 0);
+      const DiffInMs = current - first;
+      const totalDays = Math.floor(DiffInMs / (1000 * 60 * 60 * 24)); // Denominator for attendance.
+      console.log(`First Date: ${first}, Current: ${current}`);
 
+      console.log();
+      if (totalDays == 0) {
+        return 0;
+      }
 
-    user.analytics.attendance = calculateAttendance()
-    user.save();
-    // 
+      const attendance = ((daysStudied / totalDays) * 100).toFixed(2);
+      return attendance;
+    };
+
     res.json({
-      attendance: user.analytics.attendance || 0,
+      attendance: calculateAttendance() || 0,
       avgMarks: user.analytics.avgMarks || 0,
       dailyHours: user.analytics.dailyHours || [],
       totalCourses: user.analytics.totalCourses || 0,
       completedCourses: user.analytics.completedCourses || 0,
       totalHours: user.analytics.totalHours || 0,
-      daysStudied: user.analytics.daysStudied || 0,
+      daysStudied: daysStudied || 0,
       studySessions: user.analytics.studySessions || [],
       learningHoursChart: user.analytics.learningHoursChart || [],
       certificates: user.analytics.certificates || [],
@@ -83,7 +101,7 @@ const recordStudySession = async (req, res) => {
       sessionDate.toDateString();
 
     if (isNewDay) {
-      user.analytics.daysStudied += 1;
+      // user.analytics.daysStudied += 1; // shouldn't be calculated like this
       user.analytics.lastStudyDate = sessionDate;
     }
 

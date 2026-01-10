@@ -155,7 +155,7 @@ const updateCourseProgress = async (req, res) => {
 
     user.analytics ||= {
       totalHours: 0,
-      daysStudied: 0,
+      // daysStudied: 0, it should be calculated. so no need to store it in db
       completedCourses: 0,
       certificates: 0,
       studySessions: [],

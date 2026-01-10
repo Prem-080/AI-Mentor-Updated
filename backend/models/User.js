@@ -71,7 +71,7 @@ const userSchema = new mongoose.Schema(
 
     analytics: {
       totalHours: { type: Number, default: 0 },
-      daysStudied: { type: Number, default: 0 },
+      // daysStudied: { type: Number, default: 0 }, //daysStudied shouldn't be stored.
       studySessions: [
         {
           date: Date,
@@ -79,7 +79,7 @@ const userSchema = new mongoose.Schema(
         },
       ],
       lastStudyDate: { type: Date, default: null },
-      attendance: { type: Number, default: 0 },
+      // attendance: { type: Number, default: 0 }, //Attendance should not be stored as well.
       avgMarks: { type: Number, default: 0 },
       dailyHours: { type: Number, default: 0 },
       totalCourses: { type: Number, default: 0 },
