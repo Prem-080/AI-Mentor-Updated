@@ -16,6 +16,24 @@ const getUserAnalytics = async (req, res) => {
       user.analytics = {};
     }
 
+    const calculateAttendance = () => {
+      const daysStudied = user.analytics?.daysStudied || 1;
+      const lastStudyDate = user.analytics?.lastStudyDate;
+      const studySessions = user.analytics?.studySessions;
+      const today = new Date();
+      console.log(studySessions);
+      
+
+      const firstDate = studySessions.length > 0 ? new Date(studySessions[0].date) : null;
+
+      const attendance = (daysStudied / studySessions.length * 100).toFixed(2);
+      return (attendance);
+    }
+
+
+    user.analytics.attendance = calculateAttendance()
+    user.save();
+    // 
     res.json({
       attendance: user.analytics.attendance || 0,
       avgMarks: user.analytics.avgMarks || 0,
@@ -62,7 +80,7 @@ const recordStudySession = async (req, res) => {
     const isNewDay =
       !user.analytics.lastStudyDate ||
       new Date(user.analytics.lastStudyDate).toDateString() !==
-        sessionDate.toDateString();
+      sessionDate.toDateString();
 
     if (isNewDay) {
       user.analytics.daysStudied += 1;
