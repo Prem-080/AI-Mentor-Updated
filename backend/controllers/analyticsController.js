@@ -17,7 +17,7 @@ const getUserAnalytics = async (req, res) => {
       user.analytics = {};
     }
 
-    const calculateAttendance = (studySessions) => {
+    const calculateAttendance = () => {
       if (!studySessions || studySessions.length == 0) {
         return 0;
       }
@@ -25,13 +25,12 @@ const getUserAnalytics = async (req, res) => {
       const datesSet = new Set(
         studySessions
           .map((session) => new Date(session.date).toDateString())
-          .sort((a, b) => a - b)
       );
-      const studyDates = [...datesSet];
-      console.log(studyDates);
+      const studyDates = [...datesSet].sort((a, b) => a - b);
+      // console.log(studyDates);
 
       const daysStudied = studyDates.length;
-      console.log(daysStudied);
+      // console.log(daysStudied);
 
       // Calculating Total Days from firstDate
       const firstDate = studyDates.length != 0 ? new Date(studyDates[0]) : null;
@@ -40,11 +39,10 @@ const getUserAnalytics = async (req, res) => {
       first.setHours(0, 0, 0, 0);
       current.setHours(0, 0, 0, 0);
       const DiffInMs = current - first;
-      const totalDays = Math.floor(DiffInMs / (1000 * 60 * 60 * 24)); // Denominator for attendance.
-      console.log(`First Date: ${first}, Current: ${current}`);
+      const totalDays = Math.floor(DiffInMs / (1000 * 60 * 60 * 24)) + 1; // Denominator for attendance.
+      // console.log(`First Date: ${first}, Current: ${current}`);
 
-      console.log();
-      if (totalDays == 0) {
+      if (totalDays <= 0) {
         return 0;
       }
 
