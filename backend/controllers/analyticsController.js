@@ -20,6 +20,9 @@ const getUserAnalytics = async (req, res) => {
     const calculateAttendance = () => {
       const studyDates = validateUniqueStudiedDates();
       const daysStudied = studyDates.length;
+      if (!daysStudied || daysStudied == 0) {
+        return { attendance: 0, daysStudied: 0 };
+      }
       const firstDate = studyDates.length != 0 ? new Date(studyDates[0]) : null;
       const totalDaysValue = calculateTotalDays(firstDate);
 
@@ -34,9 +37,6 @@ const getUserAnalytics = async (req, res) => {
 
     const validateUniqueStudiedDates = () => {
       const studySessions = user.analytics?.studySessions;
-      if (!studySessions || studySessions.length == 0) {
-        return { attendance: 0, daysStudied: 0 };
-      }
       //Unique Days of Study Sessions
       const datesSet = new Set(
         studySessions
