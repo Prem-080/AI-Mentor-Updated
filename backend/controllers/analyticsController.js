@@ -48,8 +48,8 @@ const getUserAnalytics = async (req, res) => {
 
     const calculateTotalDays = (firstDate, current = new Date()) => {
       // Calculating Total Days from firstDate
-      const current = new Date(current);
       const first = new Date(firstDate);
+      current = new Date(current);
       first.setHours(0, 0, 0, 0);
       current.setHours(0, 0, 0, 0);
       const DiffInMs = current - first;
