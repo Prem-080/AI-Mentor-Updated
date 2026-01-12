@@ -18,42 +18,49 @@ const getUserAnalytics = async (req, res) => {
     }
 
     const calculateAttendance = () => {
+      const studyDates = validateUniqueStudiedDates();
+      const daysStudied = studyDates.length;
+      const firstDate = studyDates.length != 0 ? new Date(studyDates[0]) : null;
+      const totalDaysValue = calculateTotalDays(firstDate);
+
+      if (totalDaysValue <= 0) {
+        return { attendance: 0, daysStudied: 0 };
+      }
+      // console.log(`Days Studied: ${daysStudied} and totalDays: ${totalDaysValue}`)
+      const attendance = ((daysStudied / totalDaysValue) * 100).toFixed(2);
+      // console.log(attendance);
+      return { attendance, daysStudied };
+    };
+
+    const validateUniqueStudiedDates = () => {
       const studySessions = user.analytics?.studySessions;
       if (!studySessions || studySessions.length == 0) {
         return { attendance: 0, daysStudied: 0 };
       }
-      //Days of Study Sessions
+      //Unique Days of Study Sessions
       const datesSet = new Set(
         studySessions
           .map((session) => new Date(session.date).toDateString())
       );
       const studyDates = [...datesSet].sort((a, b) => a - b);
+      return studyDates;
+    }
 
-
-      const daysStudied = studyDates.length;
-
-
+    const calculateTotalDays = (firstDate, current = new Date()) => {
       // Calculating Total Days from firstDate
-      const firstDate = studyDates.length != 0 ? new Date(studyDates[0]) : null;
-      const current = new Date();
+      const current = new Date(current);
       const first = new Date(firstDate);
       first.setHours(0, 0, 0, 0);
       current.setHours(0, 0, 0, 0);
       const DiffInMs = current - first;
       const totalDays = Math.floor(DiffInMs / (1000 * 60 * 60 * 24)) + 1; // Denominator for attendance.
 
+      return totalDays;
+    }
 
-      if (totalDays <= 0) {
-        return { attendance: 0, daysStudied: 0 };
-      }
-      console.log(`Days Studied: ${daysStudied} and totalDays: ${totalDays}`)
-
-      const attendance = ((daysStudied / totalDays) * 100).toFixed(2);
-      console.log(attendance);
-      return { attendance, daysStudied };
-    };
     const { attendance, daysStudied } = calculateAttendance();
-    console.log(attendance, daysStudied);
+    // console.log(attendance, daysStudied);
+
     res.json({
       attendance: attendance || 0,
       avgMarks: user.analytics.avgMarks || 0,
