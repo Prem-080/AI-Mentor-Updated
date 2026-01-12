@@ -18,8 +18,9 @@ const getUserAnalytics = async (req, res) => {
     }
 
     const calculateAttendance = () => {
+      const studySessions = user.analytics?.studySessions;
       if (!studySessions || studySessions.length == 0) {
-        return 0;
+        return { attendance: 0, daysStudied: 0 };
       }
       //Days of Study Sessions
       const datesSet = new Set(
@@ -27,10 +28,10 @@ const getUserAnalytics = async (req, res) => {
           .map((session) => new Date(session.date).toDateString())
       );
       const studyDates = [...datesSet].sort((a, b) => a - b);
-      // console.log(studyDates);
+
 
       const daysStudied = studyDates.length;
-      // console.log(daysStudied);
+
 
       // Calculating Total Days from firstDate
       const firstDate = studyDates.length != 0 ? new Date(studyDates[0]) : null;
@@ -40,18 +41,21 @@ const getUserAnalytics = async (req, res) => {
       current.setHours(0, 0, 0, 0);
       const DiffInMs = current - first;
       const totalDays = Math.floor(DiffInMs / (1000 * 60 * 60 * 24)) + 1; // Denominator for attendance.
-      // console.log(`First Date: ${first}, Current: ${current}`);
+
 
       if (totalDays <= 0) {
-        return 0;
+        return { attendance: 0, daysStudied: 0 };
       }
+      console.log(`Days Studied: ${daysStudied} and totalDays: ${totalDays}`)
 
       const attendance = ((daysStudied / totalDays) * 100).toFixed(2);
-      return attendance;
+      console.log(attendance);
+      return { attendance, daysStudied };
     };
-
+    const { attendance, daysStudied } = calculateAttendance();
+    console.log(attendance, daysStudied);
     res.json({
-      attendance: calculateAttendance() || 0,
+      attendance: attendance || 0,
       avgMarks: user.analytics.avgMarks || 0,
       dailyHours: user.analytics.dailyHours || [],
       totalCourses: user.analytics.totalCourses || 0,
