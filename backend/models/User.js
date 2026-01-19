@@ -81,7 +81,7 @@ const userSchema = new mongoose.Schema(
       lastStudyDate: { type: Date, default: null },
       attendance: { type: Number, default: 0 },
       avgMarks: { type: Number, default: 0 },
-      dailyHours: { type: Number, default: 0 },
+      // dailyHours: { type: Number, default: 0 },
       totalCourses: { type: Number, default: 0 },
       completedCourses: { type: Number, default: 0 },
       certificates: { type: Number, default: 0 },
