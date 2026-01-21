@@ -301,16 +301,58 @@ export default function Learning() {
   useEffect(() => {
     const v = videoRef.current;
     if (!v || !learningData?.currentLesson) return;
-    const src =
-      (selectedCelebrity && celebrityVideoMap[selectedCelebrity]?.video) ||
-      learningData.currentLesson.videoUrl;
-    if (src) {
-      v.pause();
-      v.src = src;
-      v.load();
-      // don't auto-play forcibly; keep isPlaying state consistent
-      setIsPlaying(false);
-    }
+
+    const loadVideo = async () => {
+      if (selectedCelebrity) {
+        setIsAIVideoLoading(true);
+        try {
+          const payload = {
+            celebrity: selectedCelebrity,
+            lessonContent: learningData.currentLesson.content?.introduction || learningData.currentLesson.title || "Welcome to the lesson",
+            courseTitle: learningData.course?.title || "Course"
+          };
+          const data = await getAIVideo(payload);
+          if (data && data.videoUrl) {
+            setAiVideoUrl(data.videoUrl);
+            v.pause();
+            v.src = data.videoUrl;
+            v.load();
+            const p = v.play();
+            if (p && typeof p.then === "function") {
+              p.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+            } else {
+              setIsPlaying(true);
+            }
+          }
+        } catch (error) {
+          console.error("Error generating AI video on lesson change:", error);
+          const src = celebrityVideoMap[selectedCelebrity]?.video || learningData.currentLesson.videoUrl;
+          if (src) {
+            v.pause();
+            v.src = src;
+            v.load();
+            const p = v.play();
+            if (p && typeof p.then === "function") {
+              p.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+            } else {
+              setIsPlaying(true);
+            }
+          }
+        } finally {
+          setIsAIVideoLoading(false);
+        }
+      } else {
+        const src = learningData.currentLesson.videoUrl;
+        if (src) {
+          v.pause();
+          v.src = src;
+          v.load();
+          setIsPlaying(false); // Lessons don't autoplay by default unless celebrity is selected
+        }
+      }
+    };
+
+    loadVideo();
   }, [learningData?.currentLesson, selectedCelebrity]);
 
   // If selectedCelebrity is Salman Khan and the user wants the Reactjs paragraph
@@ -417,18 +459,8 @@ export default function Learning() {
   };
 
   const handleLessonClick = (lesson) => {
-    // update current lesson locally and load associated video
+    // update current lesson locally and let useEffect handle video loading
     setLearningData((prev) => ({ ...prev, currentLesson: lesson }));
-    if (videoRef.current && lesson && lesson.videoUrl) {
-      videoRef.current.pause();
-      videoRef.current.src =
-        (celebrityVideoMap[selectedCelebrity] &&
-          celebrityVideoMap[selectedCelebrity].video) ||
-        lesson.videoUrl;
-      videoRef.current.load();
-      const p = videoRef.current.play();
-      if (p && typeof p.then === "function") p.catch(() => {});
-    }
   };
 
   const handlePrevious = () => {
@@ -576,15 +608,12 @@ export default function Learning() {
                   <button
                     key={c}
                     onClick={() => {
-                      setSelectedCelebrity(c);
-                      const map = celebrityVideoMap[c];
-                      if (map && videoRef.current) {
-                        videoRef.current.pause();
-                        videoRef.current.src = map.video;
-                        videoRef.current.load();
-                        const p = videoRef.current.play();
-                        if (p && typeof p.then === "function")
-                          p.catch(() => {});
+                      if (selectedCelebrity === c) {
+                        // Toggle off if same celebrity clicked again
+                        setSelectedCelebrity(null);
+                        setAiVideoUrl(null);
+                      } else {
+                        setSelectedCelebrity(c);
                       }
                     }}
                     className={`w-full text-left px-4 py-3 rounded-lg border ${
@@ -725,9 +754,16 @@ export default function Learning() {
           {/* Video Player */}
           <div
             ref={playerContainerRef}
-            className="relative bg-black rounded-lg overflow-hidden"
+            className="relative bg-black rounded-lg overflow-hidden group"
             style={{ aspectRatio: "16/9" }}
           >
+            {isAIVideoLoading && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
+                <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <p className="text-white font-medium animate-pulse">Generating Celebrity Video...</p>
+                <p className="text-gray-400 text-sm mt-2">This may take a few moments</p>
+              </div>
+            )}
             {currentLesson?.youtubeUrl ? (
               <iframe
                 key={currentLesson.id}
@@ -744,8 +780,8 @@ export default function Learning() {
               <video
                 ref={videoRef}
                 src={
-                  (celebrityVideoMap[selectedCelebrity] &&
-                    celebrityVideoMap[selectedCelebrity].video) ||
+                  aiVideoUrl ||
+                  (selectedCelebrity && celebrityVideoMap[selectedCelebrity] && celebrityVideoMap[selectedCelebrity].video) ||
                   currentLesson?.videoUrl
                 }
                 className="w-full h-full object-contain bg-black"
