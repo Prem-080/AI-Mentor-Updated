@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import Header from "../components/Header";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getAIVideo } from "../service/aiService";
+
 import {
   ChevronLeft,
   Pause,
@@ -36,20 +38,20 @@ export default function Learning() {
   // Captions state
   const [captions, setCaptions] = useState([]);
   const [activeCaption, setActiveCaption] = useState("");
-  const celebrities = ["Prabhas", "Allu Arjun", "Vikram"];
+  const celebrities = ["Salman Khan", "Modi ji", "SRK"];
 
   // map celebrities to local videos and vtt files
   const celebrityVideoMap = {
-    Prabhas: { video: "/vdo1.mp4", vtt: "/vdo1.vtt" },
-    "Allu Arjun": { video: "/vdo2.mp4", vtt: "/vdo2.vtt" },
-    Vikram: { video: "/vdo1.mp4", vtt: "/vdo1.vtt" },
+    "Salman Khan": { video: "/vdo1.mp4", vtt: "/vdo1.vtt" },
+    "Modi ji": { video: "/vdo2.mp4", vtt: "/vdo2.vtt" },
+    SRK: { video: "/vdo1.mp4", vtt: "/vdo1.vtt" },
   };
 
   const [selectedCelebrity, setSelectedCelebrity] = useState(null);
 
-  // When user requested single-word subtitles for the Java paragraph,
+  // When user requested single-word subtitles for the Reactjs paragraph,
   // we'll split into words and compute word-by-word cues when video duration is known.
-  const JAVA_PARAGRAPH = `Java is a high-level, object-oriented programming language that was originally developed by Sun Microsystems in 1995 and is now owned by Oracle Corporation. It is designed to be platform-independent, meaning that Java code can run on any device that has a Java Virtual Machine (JVM), making it highly versatile for developing cross-platform applications. Java emphasizes object-oriented principles, such as encapsulation, inheritance and polymorphism, which allow developers to create modular, reusable and maintainable code. It has a strong memory management system, including automatic garbage collection, which reduces the likelihood of memory leaks.`;
+  const Reactjs_PARAGRAPH = `Reactjs is a high-level, object-oriented programming language that was originally developed by Sun Microsystems in 1995 and is now owned by Oracle Corporation. It is designed to be platform-independent, meaning that Reactjs code can run on any device that has a Reactjs Virtual Machine (JVM), making it highly versatile for developing cross-platform applications. Reactjs emphasizes object-oriented principles, such as encapsulation, inheritance and polymorphism, which allow developers to create modular, reusable and maintainable code. It has a strong memory management system, including automatic garbage collection, which reduces the likelihood of memory leaks.`;
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
@@ -59,6 +61,8 @@ export default function Learning() {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [aiVideoUrl, setAiVideoUrl] = useState(null);
+  const [isAIVideoLoading, setIsAIVideoLoading] = useState(false);
 
   const videoRef = useRef(null);
   const playerContainerRef = useRef(null);
@@ -85,11 +89,11 @@ export default function Learning() {
           setLearningData(courseData);
           // Load user's progress for this course
           const userProgress = user?.purchasedCourses?.find(
-            (course) => course.courseId === parseInt(courseId)
+            (course) => course.courseId === parseInt(courseId),
           )?.progress;
           if (userProgress) {
             setExpandedModule(
-              userProgress.currentLesson?.moduleTitle || "module-1"
+              userProgress.currentLesson?.moduleTitle || "module-1",
             );
             // Set current lesson based on progress
             const currentLesson = userProgress.currentLesson;
@@ -108,7 +112,7 @@ export default function Learning() {
           }
         } else {
           console.error(
-            "Failed to fetch course learning data, using local fallback"
+            "Failed to fetch course learning data, using local fallback",
           );
           // Fallback local data so the learning page works without backend
           const fallback = {
@@ -122,25 +126,25 @@ export default function Learning() {
                 lessons: [
                   {
                     id: 1,
-                    title: "Introduction to Java",
+                    title: "Introduction to Reactjs",
                     type: "video",
                     duration: "0:10",
                     videoUrl: "/vdo1.mp4",
                     content: {
                       introduction:
-                        "Java is a high-level, object-oriented programming language that was originally developed by Sun Microsystems in 1995 and is now owned by Oracle Corporation. It is designed to be platform-independent, meaning that Java code can run on any device that has a Java Virtual Machine (JVM), making it highly versatile for developing cross-platform applications. Java emphasizes object-oriented principles, such as encapsulation, inheritance and polymorphism, which allow developers to create modular, reusable and maintainable code. It has a strong memory management system, including automatic garbage collection, which reduces the likelihood of memory leaks.",
+                        "Reactjs is a high-level, object-oriented programming language that was originally developed by Sun Microsystems in 1995 and is now owned by Oracle Corporation. It is designed to be platform-independent, meaning that Reactjs code can run on any device that has a Reactjs Virtual Machine (JVM), making it highly versatile for developing cross-platform applications. Reactjs emphasizes object-oriented principles, such as encapsulation, inheritance and polymorphism, which allow developers to create modular, reusable and maintainable code. It has a strong memory management system, including automatic garbage collection, which reduces the likelihood of memory leaks.",
                       keyConcepts: [],
                     },
                   },
                   {
                     id: 2,
-                    title: "Java: Advanced Concepts",
+                    title: "Reactjs: Advanced Concepts",
                     type: "video",
                     duration: "0:12",
                     videoUrl: "/vdo2.mp4",
                     content: {
                       introduction:
-                        "Continuation video for Java advanced concepts.",
+                        "Continuation video for Reactjs advanced concepts.",
                       keyConcepts: [],
                     },
                   },
@@ -154,7 +158,7 @@ export default function Learning() {
 
           // If we have user progress, try to set the exact lesson from fallback
           const userProgress = user?.purchasedCourses?.find(
-            (course) => course.courseId === parseInt(courseId)
+            (course) => course.courseId === parseInt(courseId),
           )?.progress;
           if (userProgress && userProgress.currentLesson) {
             const lesson = fallback.modules
@@ -172,7 +176,7 @@ export default function Learning() {
       } catch (error) {
         console.error(
           "Error fetching learning data, using local fallback:",
-          error
+          error,
         );
         const fallback = {
           course: {
@@ -186,25 +190,25 @@ export default function Learning() {
               lessons: [
                 {
                   id: 1,
-                  title: "Introduction to Java",
+                  title: "Introduction to Reactjs",
                   type: "video",
                   duration: "0:10",
                   videoUrl: "/vdo1.mp4",
                   content: {
                     introduction:
-                      "Java is a high-level, object-oriented programming language that was originally developed by Sun Microsystems in 1995 and is now owned by Oracle Corporation. It is designed to be platform-independent, meaning that Java code can run on any device that has a Java Virtual Machine (JVM), making it highly versatile for developing cross-platform applications. Java emphasizes object-oriented principles, such as encapsulation, inheritance and polymorphism, which allow developers to create modular, reusable and maintainable code. It has a strong memory management system, including automatic garbage collection, which reduces the likelihood of memory leaks.",
+                      "Reactjs is a high-level, object-oriented programming language that was originally developed by Sun Microsystems in 1995 and is now owned by Oracle Corporation. It is designed to be platform-independent, meaning that Reactjs code can run on any device that has a Reactjs Virtual Machine (JVM), making it highly versatile for developing cross-platform applications. Reactjs emphasizes object-oriented principles, such as encapsulation, inheritance and polymorphism, which allow developers to create modular, reusable and maintainable code. It has a strong memory management system, including automatic garbage collection, which reduces the likelihood of memory leaks.",
                     keyConcepts: [],
                   },
                 },
                 {
                   id: 2,
-                  title: "Java: Advanced Concepts",
+                  title: "Reactjs: Advanced Concepts",
                   type: "video",
                   duration: "0:12",
                   videoUrl: "/vdo2.mp4",
                   content: {
                     introduction:
-                      "Continuation video for Java advanced concepts.",
+                      "Continuation video for Reactjs advanced concepts.",
                     keyConcepts: [],
                   },
                 },
@@ -218,7 +222,7 @@ export default function Learning() {
 
         // If we have user progress, try to set the exact lesson from fallback
         const userProgress = user?.purchasedCourses?.find(
-          (course) => course.courseId === parseInt(courseId)
+          (course) => course.courseId === parseInt(courseId),
         )?.progress;
         if (userProgress && userProgress.currentLesson) {
           const lesson = fallback.modules
@@ -263,7 +267,7 @@ export default function Learning() {
             const timeLine = lines[0];
             const textLines = lines.slice(1).join(" ");
             const match = timeLine.match(
-              /(\d{2}:\d{2}:\d{2}\.\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}\.\d{3})/
+              /(\d{2}:\d{2}:\d{2}\.\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}\.\d{3})/,
             );
             if (!match) return null;
             const toSeconds = (s) => {
@@ -309,15 +313,15 @@ export default function Learning() {
     }
   }, [learningData?.currentLesson, selectedCelebrity]);
 
-  // If selectedCelebrity is Prabhas and the user wants the Java paragraph
+  // If selectedCelebrity is Salman Khan and the user wants the Reactjs paragraph
   // shown word-by-word, create per-word cues when video metadata (duration) is available.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
 
     const createWordCues = () => {
-      if (selectedCelebrity !== "Prabhas") return;
-      const words = JAVA_PARAGRAPH.split(/\s+/).filter(Boolean);
+      if (selectedCelebrity !== "Salman Khan") return;
+      const words = Reactjs_PARAGRAPH.split(/\s+/).filter(Boolean);
       if (
         !words.length ||
         !v.duration ||
@@ -352,16 +356,16 @@ export default function Learning() {
   // Flatten modules into a single lessons list and compute current index
   const allLessons = (modules || []).flatMap((module) => module.lessons || []);
   const currentLessonIndex = allLessons.findIndex(
-    (lesson) => lesson.id === currentLesson?.id
+    (lesson) => lesson.id === currentLesson?.id,
   );
 
   const completeLesson = async (lessonId) => {
     // Check if lesson is already completed
     const courseProgress = user?.purchasedCourses?.find(
-      (course) => course.courseId === parseInt(courseId)
+      (course) => course.courseId === parseInt(courseId),
     )?.progress;
     const isAlreadyCompleted = courseProgress?.completedLessons?.some(
-      (cl) => cl.lessonId === lessonId
+      (cl) => cl.lessonId === lessonId,
     );
 
     if (isAlreadyCompleted) {
@@ -494,7 +498,7 @@ export default function Learning() {
       // update visible caption overlay
       if (captions.length > 0) {
         const cue = captions.find(
-          (c) => currentTime >= c.start && currentTime <= c.end
+          (c) => currentTime >= c.start && currentTime <= c.end,
         );
         setActiveCaption(cue ? cue.text : "");
       }
@@ -564,7 +568,9 @@ export default function Learning() {
             <div className="flex flex-col gap-2">
               {celebrities
                 .filter((c) =>
-                  c.toLowerCase().includes(celebritySearch.trim().toLowerCase())
+                  c
+                    .toLowerCase()
+                    .includes(celebritySearch.trim().toLowerCase()),
                 )
                 .map((c) => (
                   <button
@@ -597,12 +603,12 @@ export default function Learning() {
             {(() => {
               const completedCount =
                 user?.purchasedCourses?.find(
-                  (course) => course.courseId === parseInt(courseId)
+                  (course) => course.courseId === parseInt(courseId),
                 )?.progress?.completedLessons?.length || 0;
               const totalCount = allLessons.length;
               const progressPercent = Math.min(
                 (completedCount / totalCount) * 100,
-                100
+                100,
               );
               console.log("Progress calculation:", {
                 completedCount,
@@ -631,7 +637,7 @@ export default function Learning() {
                 .map((module) => ({
                   ...module,
                   lessons: module.lessons.filter((lesson) =>
-                    lesson.title.toLowerCase().includes(q)
+                    lesson.title.toLowerCase().includes(q),
                   ),
                 }))
                 .filter((m) => m.lessons.length > 0);
@@ -692,10 +698,11 @@ export default function Learning() {
                           </div>
                           {user?.purchasedCourses
                             ?.find(
-                              (course) => course.courseId === parseInt(courseId)
+                              (course) =>
+                                course.courseId === parseInt(courseId),
                             )
                             ?.progress?.completedLessons?.some(
-                              (cl) => cl.lessonId === lesson.id
+                              (cl) => cl.lessonId === lesson.id,
                             ) ? (
                             <Check className="w-4 h-4 text-green-500" />
                           ) : (
@@ -725,7 +732,7 @@ export default function Learning() {
               <iframe
                 key={currentLesson.id}
                 src={`https://www.youtube.com/embed/${getYouTubeVideoId(
-                  currentLesson.youtubeUrl
+                  currentLesson.youtubeUrl,
                 )}`}
                 className="w-full h-full"
                 frameBorder="0"
