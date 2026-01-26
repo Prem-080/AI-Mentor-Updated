@@ -1,0 +1,1 @@
+Node.js is an open-source JavaScript runtime for server-side execution. It enables full-stack JavaScript, allowing one language for client and server. Its event-driven, non-blocking I/O model ensures high efficiency and scalability, making it ideal for building fast web applications, APIs, and real-time services.

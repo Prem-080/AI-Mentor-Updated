@@ -326,7 +326,6 @@ export default function Learning() {
               setIsPlaying(true);
             }
           }
-          setIsAIVideoLoading(false);
         } catch (error) {
           console.error("Error generating AI video on lesson change:", error);
           const src = celebrityVideoMap[selectedCelebrity]?.video || learningData.currentLesson.videoUrl;
@@ -342,9 +341,10 @@ export default function Learning() {
             }
           }
         } finally {
-          // setIsAIVideoLoading(false);
+          setIsAIVideoLoading(false);
         }
       } else {
+        setIsAIVideoLoading(false);
         const src = learningData.currentLesson.videoUrl;
         if (src) {
           v.pause();

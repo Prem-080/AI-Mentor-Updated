@@ -1,0 +1,1 @@
+HTML (HyperText Markup Language) is the standard language for building web pages. It uses "tags" to structure content, defining elements like headings, paragraphs, and links. This forms the skeleton of any website. Web browsers interpret this markup to display information. Learning HTML is the crucial first step in web development.

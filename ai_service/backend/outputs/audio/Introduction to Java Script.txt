@@ -1,0 +1,1 @@
+JavaScript is the scripting language that brings websites to life. It enables dynamic content, animations, and user responsiveness directly in web browsers. Beyond front-end, Node.js extends its power to server-side. Learning JavaScript is fundamental for building modern, engaging web applications and a core skill for web developers.

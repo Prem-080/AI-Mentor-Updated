@@ -1,0 +1,1 @@
+HTML (HyperText Markup Language) is the language for building web pages. It uses tags to define structure and content like headings, paragraphs, images, and links. Browsers interpret HTML to display information, forming a website's essential skeleton. It is crucial for web development, laying the foundation before styling or interactivity are added.

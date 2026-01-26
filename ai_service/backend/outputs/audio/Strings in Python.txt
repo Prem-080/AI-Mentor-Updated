@@ -1,0 +1,1 @@
+Strings are ordered sequences of characters, representing text. They are immutable; once created, their content cannot be changed. Defined with single, double, or triple quotes, strings support operations like concatenation, slicing, and methods for text manipulation. They are fundamental for processing and storing textual data.

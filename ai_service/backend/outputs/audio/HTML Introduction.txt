@@ -1,0 +1,1 @@
+HTML (HyperText Markup Language) is the core language for building web pages. It structures content using "tags" to define elements like headings, paragraphs, and images. Browsers display content based on these tags. It's the fundamental framework for every website, organizing text and media for readability online.
