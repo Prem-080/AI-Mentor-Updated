@@ -17,6 +17,7 @@ import {
   Check,
   Circle,
   FileText,
+  CloudCog,
 } from "lucide-react";
 
 const getYouTubeVideoId = (url) => {
@@ -86,6 +87,7 @@ export default function Learning() {
 
         if (response.ok) {
           const courseData = await response.json();
+          console.log(courseData);
           setLearningData(courseData);
           // Load user's progress for this course
           const userProgress = user?.purchasedCourses?.find(
@@ -307,9 +309,9 @@ export default function Learning() {
         setIsAIVideoLoading(true);
         try {
           const payload = {
-            celebrity: selectedCelebrity,
-            lessonContent: learningData.currentLesson.content?.introduction || learningData.currentLesson.title || "Welcome to the lesson",
-            courseTitle: learningData.course?.title || "Course"
+            celebrity: selectedCelebrity.split(" ")[0].toLowerCase(),
+            course: learningData?.modules?.[0]?.title || "React JS",
+            topic: learningData?.modules?.[0]?.lessons?.[0]?.title || "Welcome to the lesson"
           };
           const data = await getAIVideo(payload);
           if (data && data.videoUrl) {
@@ -324,6 +326,7 @@ export default function Learning() {
               setIsPlaying(true);
             }
           }
+          setIsAIVideoLoading(false);
         } catch (error) {
           console.error("Error generating AI video on lesson change:", error);
           const src = celebrityVideoMap[selectedCelebrity]?.video || learningData.currentLesson.videoUrl;
@@ -339,7 +342,7 @@ export default function Learning() {
             }
           }
         } finally {
-          setIsAIVideoLoading(false);
+          // setIsAIVideoLoading(false);
         }
       } else {
         const src = learningData.currentLesson.videoUrl;
