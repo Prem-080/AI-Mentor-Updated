@@ -312,8 +312,8 @@ export default function Learning() {
         try {
           const payload = {
             celebrity: selectedCelebrity.split(" ")[0].toLowerCase(),
-            course: learningData?.modules?.[0]?.title || "React JS",
-            topic: learningData?.modules?.[0]?.lessons?.[0]?.title || "Welcome to the lesson"
+            course: learningData?.course?.title || learningData?.modules?.[0]?.title || "React JS",
+            topic: learningData.currentLesson.title || learningData?.modules?.[0]?.lessons?.[0]?.title || "Welcome to the lesson"
           };
           const data = await getAIVideo(payload);
           if (data && data.videoUrl) {
